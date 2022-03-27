@@ -22,14 +22,6 @@ struct Args {
     count: u8,
 }
 
-fn replace_all<'a>(target: &str, from: &str, to: fn() -> String) -> String {
-    if target.contains(from) {
-        replace_all(&target.replacen(from, &to(), 1), from, to)
-    } else {
-        target.to_string()
-    }
-}
-
 fn replace_placeholder(command: &str) -> String {
     let replacer: Vec<(&str, Box<fn() -> String>)> = vec![
         ("integer", Box::new(|| random::<i32>().to_string())),
@@ -60,7 +52,11 @@ fn replace_placeholder(command: &str) -> String {
     replacer
         .into_iter()
         .fold(command.to_string(), |res, (from, to)| {
-            replace_all(&res, from, *to)
+            let mut str = res;
+            while str.contains(from) {
+                str = str.replacen(from, &to(), 1)
+            }
+            str
         })
 }
 
